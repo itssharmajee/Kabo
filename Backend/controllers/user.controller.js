@@ -12,6 +12,10 @@ export const registerUser = async (req, res, next) => {
     }
 
     const { fullName, email, password } = req.body;
+    const isUserAlreadyExists = await User.findOne({email});
+    if(isUserAlreadyExists){
+        return res.status(400).json({message:"User already Exists"})
+    }
 
     const hashedPassword = await User.hashPassword(password);
 
@@ -59,8 +63,8 @@ export const getUserProfile = async(req,res,next)=>{
     res.status(200).json(req.user);
 };
 export const logoutUser = async(req,res,next)=>{
-    res.clearCookie('userToken');
     const token = req.cookies.userToken || req.headers.authorization?.split(' ')[1];
     await BlackListToken.create({token});
+    res.clearCookie('userToken');
     res.status(200).json({message:"Logout user successfull"});
 };
